@@ -1,0 +1,67 @@
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+  
+class Port
+{
+   public: 
+    float Voltage ;
+    float Current ;
+};
+
+  class Voltage_Source : public Port
+{
+   public :
+   Port Positive ;
+   Port Negative ;
+};
+
+class Resistor : public Port
+{
+   public :
+   Port Positive ;
+   Port Negative ;
+   float Resistance ;
+};
+
+int main()
+{
+    float pi = 3.142F ;
+    Voltage_Source V1,V2;
+    Resistor R[3];
+    R[0].Resistance = 5.0F ;
+    R[1].Resistance = 7.0F ;
+    R[2].Resistance = 10.0F;
+    int count = 0U;
+    float I1[1000], I2[1000],Admittance_Matrix ,E1;
+    cout <<"I1"<<"\t"<<"I2"<<"\t"<<"E1"<<"\n";
+    for (float t=0.0F;t<1.0F;t+=0.001)
+    {
+        V1.Positive.Voltage = 10.0F * cos ( 100 * pi * t) ;
+        V1.Negative.Voltage = 0.0F;
+        V2.Positive.Voltage = 12.0F * cos ( 100 * pi * t) ;
+        V2.Negative.Voltage = 0.0F;
+        R[0].Positive.Voltage = V1.Positive.Voltage ;
+        R[1].Negative.Voltage = V2.Negative.Voltage;
+        R[2].Negative.Voltage = -V2.Positive.Voltage;
+
+        Admittance_Matrix = ( (1.0F/R[0].Resistance) + (1.0F/R[1].Resistance) + (1.0F/R[2].Resistance) );
+        R[0].Negative.Voltage = (pow(Admittance_Matrix,-1.0F)) * ((V1.Positive.Voltage ) / (R[0].Resistance ) - (V2.Positive.Voltage ) / (R[2].Resistance )) ;
+        R[1].Positive.Voltage = R[0].Negative.Voltage ;
+        R[2].Positive.Voltage = R[0].Negative.Voltage ;
+        for (int u_i=0U ;u_i<3U;u_i++)
+        {
+            R[u_i].Positive.Current = ( R[u_i].Positive.Voltage - R[u_i].Negative.Voltage ) / R[u_i].Resistance;
+            R[u_i].Negative.Current = R[u_i].Positive.Current ;
+        }
+        I1[count] = R[0].Positive.Current ;             
+        I2[count] = R[2].Positive.Current ;
+		E1 = R[0].Negative.Voltage ;
+        cout << I1[count] << "\t";
+        cout << I2[count] << "\t";
+		cout << E1 << "\n" ;
+        count ++;
+        }
+    return 0;
+}
